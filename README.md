@@ -1,30 +1,65 @@
-# Lesson 19 - Docker CLI - Pokračování
+# Lekce 19 - Docker CLI (pokračování)
 
-# Vytváření valastních konterjnerů
+# Vytváření vlastních kontejnerů
 [Docker Cheat sheet](https://docs.docker.com/get-started/docker_cheatsheet.pdf)
 
-# Base Images  - Příklady
+# Base image - příklady
 ubuntu:resolute-20260413
 debian:trixie-backports
 
-eclipse-temurin:23-jre (java)
+eclipse-temurin:23-jre (Java)
 python:3.11.15-alpine3.22
 gcc:15.1.0 (c++)
 mcr.microsoft.com/dotnet/sdk:8.0 (c#)
-node:lts-alpine3.22 (Nodejs)
+node:lts-alpine3.22 (Node.js)
 
 
 # Dockerfile - použitý příklad
 Soubor: `applications/test/docker/Dockerfile`
 
-Použité instrukce:
-- `FROM debian:trixie-backports` - nastaví base image.
-- `RUN apt-get update && apt-get install -y socat` - spustí příkazy při buildu image.
-- `COPY rest-api.sh /opt/rest-api/rest-api.sh` - zkopíruje soubor z projektu do image.
-- `RUN chmod +x /opt/rest-api/rest-api.sh` - nastaví spustitelné právo pro skript.
-- `EXPOSE 8080` - deklaruje port aplikace.
-- `WORKDIR /opt/rest-api` - nastaví pracovní adresář.
-- `CMD ["/opt/rest-api/rest-api.sh"]` - výchozí příkaz po startu kontejneru.
+# Co je Dockerfile
+Dockerfile je textový soubor s instrukcemi, podle kterých Docker krok za krokem sestaví image.
+Každá instrukce vytvoří novou vrstvu (layer), kterou lze uložit do cache pro další build.
+
+# Co musí Dockerfile obsahovat
+Technicky stačí i jedna instrukce (`FROM` nebo `ARG` před `FROM`), ale v praxi se obvykle používá minimálně:
+- `FROM` - povinný základ image (odkud stavíme).
+- `CMD` nebo `ENTRYPOINT` - co se má spustit po startu kontejneru (doporučeno, aby kontejner plnil konkrétní úlohu).
+
+# Často používané volitelné instrukce
+- `RUN` - spouští příkazy při buildu (instalace balíčků, build aplikace).
+- `COPY` / `ADD` - kopíruje soubory do image (`ADD` navíc umí například URL nebo rozbalení archivu).
+- `WORKDIR` - nastaví pracovní adresář pro další kroky.
+- `EXPOSE` - dokumentuje port aplikace.
+- `ENV` - nastaví proměnné prostředí.
+- `ARG` - proměnné dostupné pouze při buildu.
+- `USER` - spuštění pod uživatelem bez root oprávnění (bezpečnost).
+- `LABEL` - metadata image (autor, verze, popis).
+- `VOLUME` - deklarace mount pointu pro data.
+- `HEALTHCHECK` - kontrola stavu běžícího kontejneru.
+
+Ukázka `ADD` z URL:
+```dockerfile
+FROM debian:trixie-backports
+WORKDIR /opt/app
+ADD https://example.com/files/config.yaml /opt/app/config.yaml
+```
+
+Poznámka:
+- `ADD` umí stáhnout soubor z URL při buildu image.
+- Ve většině případů je lepší použít `COPY`; `ADD` používejte hlavně tehdy, když potřebujete URL nebo automatické rozbalení archivu.
+
+Ukázka automatického rozbalení archivu:
+```dockerfile
+FROM debian:trixie-backports
+WORKDIR /opt/app
+ADD app-release.tar.gz /opt/app/
+```
+
+Vysvětlení:
+- Pokud je zdroj lokální archiv `.tar`, `.tar.gz` nebo `.tgz`, `ADD` jej při kopírování automaticky rozbalí do cílové složky.
+- U souborů stažených z URL se automatické rozbalení standardně neprovádí.
+
 
 # Docker CLI - nejpoužívanější metody (příkazy)
 - `docker build` - vytvoření image z Dockerfile.
@@ -38,8 +73,8 @@ Použité instrukce:
 - `docker rm` - smazání kontejneru.
 - `docker rmi` - smazání image.
 
-# Jak image zbuildit
-Spusť ve složce `applications/test/docker`:
+# Jak image sestavit (build)
+Spusťte ve složce `applications/test/docker`:
 
 ```bash
 docker build -t lesson19-rest-api:1.0 .
@@ -55,7 +90,7 @@ docker run -d --name lesson19-rest-api -p 8080:8080 lesson19-rest-api:1.0
 ```
 
 Vysvětlení:
-- `-d` - běh na pozadí (detached).
+- `-d` - běh na pozadí (detached mode).
 - `--name` - vlastní název kontejneru.
 - `-p 8080:8080` - mapování portu host:container.
 
@@ -97,10 +132,10 @@ docker rmi lesson19-rest-api:1.0
 ```
 
 # Co znamená tag `latest` a kdy se používá?
-- `latest` je jen obyčejný tag (alias), není to "nejnovější verze podle data".
-- Pokud při buildu nepoužiješ tag, Docker často pracuje s `:latest`.
-- Když přepíšeš `latest`, začne ukazovat na jiný image ID.
-- Pro produkci je lepší používat konkrétní verze (`1.0.0`, `2026-04-21`, git SHA) a `latest` mít jen jako pomocný tag.
+- `latest` je pouze běžný tag (alias), neznamená automaticky "nejnovější verzi podle data".
+- Pokud při buildu neuvedete tag, Docker často použije `:latest`.
+- Když přepíšete `latest`, začne ukazovat na jiné image ID.
+- V produkci je vhodnější používat konkrétní verze (`1.0.0`, `2026-04-21`, git SHA) a `latest` ponechat jen jako pomocný tag.
 
 Příklad spuštění s `latest`:
 ```bash
@@ -108,7 +143,7 @@ docker run --rm lesson19-rest-api:latest
 ```
 
 # Jak přidat více tagů na jeden image
-Možnost 1 - rovnou při buildu:
+Možnost 1 - přímo při buildu:
 ```bash
 docker build \
   -t lesson19-rest-api:1.1.0 \
@@ -117,7 +152,7 @@ docker build \
   .
 ```
 
-Možnost 2 - dodatečně přes `docker tag`:
+Možnost 2 - dodatečně pomocí `docker tag`:
 ```bash
 docker build -t lesson19-rest-api:1.1.0 .
 docker tag lesson19-rest-api:1.1.0 lesson19-rest-api:stable
