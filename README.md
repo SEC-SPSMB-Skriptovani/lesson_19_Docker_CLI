@@ -4,14 +4,13 @@
 [Docker Cheat sheet](https://docs.docker.com/get-started/docker_cheatsheet.pdf)
 
 # Base image - příklady
-ubuntu:resolute-20260413
-debian:trixie-backports
-
-eclipse-temurin:23-jre (Java)
-python:3.11.15-alpine3.22
-gcc:15.1.0 (c++)
-mcr.microsoft.com/dotnet/sdk:8.0 (c#)
-node:lts-alpine3.22 (Node.js)
+- ubuntu:resolute-20260413
+- debian:trixie-backports
+- eclipse-temurin:23-jre (Java)
+- python:3.11.15-alpine3.22
+- gcc:15.1.0 (c++)
+- mcr.microsoft.com/dotnet/sdk:8.0 (c#)
+- node:lts-alpine3.22 (Node.js)
 
 
 # Dockerfile - použitý příklad
