@@ -76,6 +76,9 @@ Vysvětlení:
 Spusťte ve složce `applications/test/docker`:
 
 ```bash
+docker build -t <název_kontejneru>:<tag> .
+
+např:
 docker build -t lesson19-rest-api:1.0 .
 ```
 
