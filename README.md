@@ -15,7 +15,16 @@ node:lts-alpine3.22 (Nodejs)
 
 
 # Dockerfile - použitý příklad
-Soubor: `Dockerfile`
+Soubor: `applications/test/docker/Dockerfile`
+
+Použité instrukce:
+- `FROM debian:trixie-backports` - nastaví base image.
+- `RUN apt-get update && apt-get install -y socat` - spustí příkazy při buildu image.
+- `COPY rest-api.sh /opt/rest-api/rest-api.sh` - zkopíruje soubor z projektu do image.
+- `RUN chmod +x /opt/rest-api/rest-api.sh` - nastaví spustitelné právo pro skript.
+- `EXPOSE 8080` - deklaruje port aplikace.
+- `WORKDIR /opt/rest-api` - nastaví pracovní adresář.
+- `CMD ["/opt/rest-api/rest-api.sh"]` - výchozí příkaz po startu kontejneru.
 
 # Docker CLI - nejpoužívanější metody (příkazy)
 - `docker build` - vytvoření image z Dockerfile.
@@ -29,7 +38,8 @@ Soubor: `Dockerfile`
 - `docker rm` - smazání kontejneru.
 - `docker rmi` - smazání image.
 
-# Jak na build kontejneru
+# Jak image zbuildit
+Spusť ve složce `applications/test/docker`:
 
 ```bash
 docker build -t lesson19-rest-api:1.0 .
@@ -86,7 +96,7 @@ Odstranění image:
 docker rmi lesson19-rest-api:1.0
 ```
 
-# Co znamená tag `latest`
+# Co znamená tag `latest` a kdy se používá?
 - `latest` je jen obyčejný tag (alias), není to "nejnovější verze podle data".
 - Pokud při buildu nepoužiješ tag, Docker často pracuje s `:latest`.
 - Když přepíšeš `latest`, začne ukazovat na jiný image ID.
