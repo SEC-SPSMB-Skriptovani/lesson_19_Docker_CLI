@@ -16,7 +16,7 @@ EXPOSE 8080
 
 #`WORKDIR` - nastaví pracovní adresář. Všechny následující příkazy budou spuštěny z tohoto adresáře.
 # obdodba `cd` v shellu.
-WORKDIR 
+WORKDIR /opt/rest-api
 
 #`CMD` - výchozí příkaz po startu kontejneru.
 CMD ["/opt/rest-api/rest-api.sh"]
